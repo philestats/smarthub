@@ -49,6 +49,9 @@ def decode_json_data_msg(strMsg):
         decoded = json.loads(strMsg)
         global deviceId 
         global thingspeakApiKey_teleinfo
+        global HCindex_previous
+        global HPindex_previous
+        global tarif_previous
         deviceId=decoded['id']
         intensity=decoded['I']
         power=decoded['P']
@@ -59,6 +62,19 @@ def decode_json_data_msg(strMsg):
         print ("----> P = ", power)
         print ("----> HC = ", HCindex)
         print ("----> HP = ", HPindex)
+        if (HCindex==HCindex_previous):
+            tarif="HP"
+        elif (HPindex==HPindex_previous):
+            tarif="HC"
+        else:
+            tarif="unknown"
+        print ("tarif={}".format(tarif))
+        if (tarif_previous != "unknown"):
+            if (tarif != tarif_previous):
+                print("Basculse tarif {} -> {}".format( tarif_previous, tarif))
+        HCindex_previous=HCindex
+        HPindex_previous=HPindex
+        tarif_previous=tarif
         req=("https://api.thingspeak.com/update?api_key={}&field1={}&field2={}").format(thingspeakApiKey_teleinfo, power, intensity)
         requests.get(req)
 
@@ -90,6 +106,11 @@ print ("MQTT connection OK")
 config = ConfigParser.RawConfigParser()
 config.read('conf/hub.conf')
 thingspeakApiKey_teleinfo = config.get('thingspeak', 'teleinfo')
+
+
+HCindex_previous=0
+HPindex_previous=0
+tarif_previous="unknown"
 
 def display_data():
     global state
