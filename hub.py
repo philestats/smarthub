@@ -17,6 +17,7 @@ import socket
 import requests
 import csv
 import sys
+import ConfigParser
 
 state="STATE_WAIT_DATA"
 
@@ -47,7 +48,7 @@ def decode_json_data_msg(strMsg):
     try:
         decoded = json.loads(strMsg)
         global deviceId 
-
+        global thingspeakApiKey_teleinfo
         deviceId=decoded['id']
         intensity=decoded['I']
         power=decoded['P']
@@ -58,7 +59,7 @@ def decode_json_data_msg(strMsg):
         print ("----> P = ", power)
         print ("----> HC = ", HCindex)
         print ("----> HP = ", HPindex)
-        req=("https://api.thingspeak.com/update?api_key=78YVOY70KAD76UJN&field1={}&field2={}").format(power, intensity)
+        req=("https://api.thingspeak.com/update?api_key={}&field1={}&field2={}").format(thingspeakApiKey_teleinfo, power, intensity)
         requests.get(req)
 
     except (ValueError, KeyError, TypeError):
@@ -86,6 +87,10 @@ client.loop_start()
 print ("MQTT connection OK")
 
 
+config = ConfigParser.RawConfigParser()
+config.read('conf/hub.conf')
+thingspeakApiKey_teleinfo = config.get('thingspeak', 'teleinfo')
+
 def display_data():
     global state
     print("display: data")
@@ -102,12 +107,9 @@ while True:
         display_data()
 
  
-#    sleep(1)    
 
 
 
-
-#	    req=("https://api.thingspeak.com/update?api_key=78YVOY70KAD76UJN&field4={}").format(total_msg_interval/5)
 
 
 
